@@ -41,6 +41,65 @@
         </section>
     </main>
 
+    <!-- Trim Modal -->
+    <div id="trim-modal" class="modal hidden">
+        <div class="modal-content trim-modal-content">
+            <div class="trim-modal-header">
+                <h2>Trim Audio</h2>
+                <p class="trim-modal-subtitle">Drag the handles to select the region you want to keep</p>
+            </div>
+
+            <!-- Waveform visualizer -->
+            <div class="waveform-container">
+                <canvas id="waveform-canvas" class="waveform-canvas"></canvas>
+                <!-- Draggable handles overlay -->
+                <div id="trim-region" class="trim-region">
+                    <div id="handle-start" class="trim-handle trim-handle-start" title="Drag to set start">
+                        <div class="handle-line"></div>
+                        <div class="handle-grip">◀</div>
+                    </div>
+                    <div class="trim-region-fill"></div>
+                    <div id="handle-end" class="trim-handle trim-handle-end" title="Drag to set end">
+                        <div class="handle-line"></div>
+                        <div class="handle-grip">▶</div>
+                    </div>
+                </div>
+                <!-- Playhead -->
+                <div id="playhead" class="playhead hidden"></div>
+            </div>
+
+            <!-- Time display -->
+            <div class="trim-times">
+                <div class="trim-time-badge">
+                    <span class="trim-time-label">Start</span>
+                    <span id="trim-start-display" class="trim-time-value">0.00s</span>
+                </div>
+                <div class="trim-duration-badge">
+                    <span id="trim-duration-display" class="trim-duration-value">0.00s</span>
+                    <span class="trim-time-label">selected</span>
+                </div>
+                <div class="trim-time-badge">
+                    <span class="trim-time-label">End</span>
+                    <span id="trim-end-display" class="trim-time-value">0.00s</span>
+                </div>
+            </div>
+
+            <!-- Playback controls -->
+            <div class="trim-playback">
+                <button id="trim-play-btn" class="trim-play-btn" title="Preview selected region">
+                    <span id="trim-play-icon">▶</span>
+                    <span id="trim-play-label">Preview Selection</span>
+                </button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="trim-cancel" class="btn-cancel">Cancel</button>
+                <button id="trim-reset" class="btn-secondary">Reset</button>
+                <button id="trim-confirm" class="btn-confirm">Use This Trim →</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Upload Details Modal -->
     <div id="upload-modal" class="modal hidden">
         <div class="modal-content">
@@ -49,21 +108,11 @@
                 <label for="sound-title">Sound Name</label>
                 <input type="text" id="sound-title" placeholder="e.g. Vine Boom" autocomplete="off" />
             </div>
-            
-            <div class="trim-controls">
-                <p class="trim-label">Trim Audio (Optional)</p>
-                <div class="time-inputs">
-                    <div class="input-group">
-                        <label for="start-time">Start Time (sec)</label>
-                        <input type="number" id="start-time" min="0" step="0.1" placeholder="0.0">
-                    </div>
-                    <div class="input-group">
-                        <label for="end-time">End Time (sec)</label>
-                        <input type="number" id="end-time" min="0" step="0.1" placeholder="Max">
-                    </div>
-                </div>
+            <div id="trim-summary" class="trim-summary hidden">
+                <span class="trim-summary-icon">✂️</span>
+                <span id="trim-summary-text">Trimmed: 0.00s - 0.00s</span>
+                <button id="edit-trim-btn" class="btn-edit-trim">Edit</button>
             </div>
-
             <div class="modal-actions">
                 <button id="cancel-upload" class="btn-cancel">Cancel</button>
                 <button id="confirm-upload" class="btn-confirm">Upload Sound</button>
@@ -84,7 +133,7 @@
         </div>
     </template>
 
-    <script src="script.js" type="module"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
