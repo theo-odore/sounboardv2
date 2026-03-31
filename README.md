@@ -1,8 +1,6 @@
 # 🎵 Serverless Soundboard
 
-A modern, fast, and globally synchronized meme soundboard. Upload tracks, play meme sounds instantly, and share the exact same board with everyone around the world—powered natively by JavaScript and **Supabase**! 
-
-![Soundboard Showcase](Dashboard.png)
+A modern, fast, and globally synchronized meme soundboard. Upload tracks, play meme sounds instantly, and share the exact same board with everyone around the world powered natively by JavaScript and **Supabase**! 
 
 ## ✨ Features
 *   🎹 **Instant Playback** – Zero latency native HTML Audio.
