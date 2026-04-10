@@ -1,7 +1,5 @@
-// Supabase credentials
-const SUPABASE_URL = 'https://eqxznsjaptwhvrdwfgdn.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_JTtyi4PJxhQ5jplxujhFog_qMY-krrN';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Supabase client (credentials loaded dynamically from backend)
+let supabaseClient = null;
 
 let currentAudio = null;
 let currentButtonInfo = null;
@@ -61,8 +59,79 @@ let trimIsPlaying = false;
 
 // ─── Init ───────────────────────────────────────────────────────────────────
 
+let titleClickCount = 0;
+let titleClickTimer = null;
+
+function setAdminMode(isActive) {
+    const badge = document.getElementById('admin-badge');
+    if (isActive) {
+        document.body.classList.add('admin-mode');
+        if (badge) badge.classList.remove('hidden');
+    } else {
+        document.body.classList.remove('admin-mode');
+        if (badge) badge.classList.add('hidden');
+    }
+}
+
 async function initUI() {
+    // Check initial admin state
+    if (localStorage.getItem('adminKey')) {
+        setAdminMode(true);
+    }
+
+    // Title click listener for Admin Mode
+    const titleEl = document.querySelector('.title');
+    if (titleEl) {
+        titleEl.addEventListener('click', () => {
+            titleClickCount++;
+            clearTimeout(titleClickTimer);
+            
+            if (titleClickCount >= 5) {
+                titleClickCount = 0;
+                
+                // If already in admin mode, turn it off without prompting
+                if (document.body.classList.contains('admin-mode')) {
+                    localStorage.removeItem('adminKey');
+                    setAdminMode(false);
+                    return;
+                }
+
+                const key = prompt('Enter Admin Key:');
+                if (key) {
+                    // Verify key with server before activating
+                    fetch('/api/verify-admin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.valid) {
+                            localStorage.setItem('adminKey', key);
+                            setAdminMode(true);
+                        } else {
+                            alert('Incorrect Admin Key');
+                        }
+                    })
+                    .catch(e => {
+                        console.error('Error verifying admin key:', e);
+                        alert('Error verifying admin key with server.');
+                    });
+                }
+            } else {
+                titleClickTimer = setTimeout(() => {
+                    titleClickCount = 0;
+                }, 1000);
+            }
+        });
+    }
+
     try {
+        // Securely load Supabase config from Node server
+        const configRes = await fetch('/api/config');
+        const config = await configRes.json();
+        supabaseClient = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_KEY);
+
         const { data: sounds, error } = await supabaseClient.from('sounds').select('*');
         if (error) throw error;
 
@@ -114,16 +183,30 @@ function renderSoundItem(sound) {
                 currentAudio = null;
                 currentButtonInfo = null;
             }
+            // Remove from server via our secure backend
             try {
-                if (sound.src.includes('sounds-media')) {
-                    const fileName = sound.src.split('/').pop();
-                    await supabaseClient.storage.from('sounds-media').remove([fileName]);
+                const adminKey = localStorage.getItem('adminKey') || '';
+                const response = await fetch(`/api/sounds/${sound.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-key': adminKey
+                    },
+                    body: JSON.stringify({ src: sound.src })
+                });
+
+                if (response.ok) {
+                    itemContainer.remove();
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    alert(`Failed to delete: ${data.error || 'Unauthorized'}`);
+                    if (response.status === 401) {
+                        localStorage.removeItem('adminKey');
+                        setAdminMode(false);
+                    }
                 }
-                const { error } = await supabaseClient.from('sounds').delete().eq('id', sound.id);
-                if (!error) { itemContainer.remove(); }
-                else { alert('Failed to delete sound from Supabase.'); }
-            } catch (e) {
-                console.error('Failed to delete', e);
+            } catch(e) {
+                console.error("Failed to delete", e);
                 alert('An error occurred.');
             }
         }

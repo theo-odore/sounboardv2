@@ -717,3 +717,30 @@ body {
         height: 75px;
     }
 }
+
+/* --- Admin Mode Adjustments --- */
+
+.delete-btn {
+    display: none;
+}
+
+body.admin-mode .delete-btn {
+    display: flex;
+}
+
+.admin-badge {
+    display: inline-block;
+    background: var(--accent-red-base);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.admin-badge.hidden {
+    display: none;
+}
