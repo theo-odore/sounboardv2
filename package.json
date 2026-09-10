@@ -1,26 +1,29 @@
 {
   "name": "sound",
-  "version": "1.0.0",
-  "description": "A modern, fast, and globally synchronized meme soundboard. Upload tracks, play meme sounds instantly, and share the exact same board with everyone around the world—powered natively by JavaScript and **Supabase**!",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "A modern, fast, self-hosted meme soundboard with in-browser audio trimming and persistent local storage.",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "migrate:supabase": "node migrate-from-supabase.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/theo-odore/sounboard.git"
   },
-  "keywords": [],
+  "keywords": [
+    "soundboard",
+    "audio",
+    "self-hosted",
+    "express"
+  ],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/theo-odore/sounboard/issues"
-  },
-  "homepage": "https://github.com/theo-odore/sounboard#readme",
   "dependencies": {
-    "@supabase/supabase-js": "^2.103.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "multer": "^1.4.5-lts.1"
   }
 }

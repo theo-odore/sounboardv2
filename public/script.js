@@ -1,6 +1,3 @@
-// Supabase client (credentials loaded dynamically from backend)
-let supabaseClient = null;
-
 let currentAudio = null;
 let currentButtonInfo = null;
 
@@ -127,20 +124,13 @@ async function initUI() {
     }
 
     try {
-        // Securely load Supabase config from Node server
-        const configRes = await fetch('/api/config');
-        const config = await configRes.json();
-        supabaseClient = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_KEY);
-
-        const { data: sounds, error } = await supabaseClient.from('sounds').select('*');
-        if (error) throw error;
+        const response = await fetch('/api/sounds');
+        if (!response.ok) throw new Error(`Failed to load sounds: ${response.status}`);
+        const sounds = await response.json();
 
         grid.innerHTML = '';
         if (sounds && sounds.length > 0) {
             sounds.forEach(s => renderSoundItem(s));
-        } else {
-            const { data: inserted } = await supabaseClient.from('sounds').insert(defaultSounds).select();
-            if (inserted) inserted.forEach(s => renderSoundItem(s));
         }
     } catch (e) {
         console.error('Failed to load sounds:', e);
@@ -558,26 +548,32 @@ confirmUploadBtn.addEventListener('click', async () => {
         }
 
         const color = colors[Math.floor(Math.random() * colors.length)];
-        const fileExt = finalBlob !== file ? 'wav' : file.name.split('.').pop();
-        const fileName = `${Date.now()}_${name.replace(/[^a-zA-Z0-9.-]/g, '_')}.${fileExt}`;
+        const fileExt = finalBlob !== file ? 'wav' : (file.name.split('.').pop() || 'wav');
+        const uploadFileName = `${name.replace(/[^a-zA-Z0-9.-]/g, '_')}.${fileExt}`;
 
-        const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('sounds-media').upload(fileName, finalBlob);
-        if (uploadError) throw uploadError;
+        const formData = new FormData();
+        formData.append('file', finalBlob, uploadFileName);
+        formData.append('name', name);
+        formData.append('color', color);
 
-        const { data: urlData } = supabaseClient.storage.from('sounds-media').getPublicUrl(fileName);
-        const newSound = { name, color, src: urlData.publicUrl };
+        const response = await fetch('/api/sounds', {
+            method: 'POST',
+            body: formData
+        });
 
-        const { data: inserted, error: insertError } = await supabaseClient.from('sounds').insert([newSound]).select();
-        if (insertError) throw insertError;
-
-        if (inserted && inserted.length > 0) {
-            renderSoundItem(inserted[0]);
-            dropZone.style.borderColor = 'var(--accent-red-light)';
-            setTimeout(() => dropZone.style.borderColor = '', 1000);
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `Upload failed with status ${response.status}`);
         }
+
+        const newSound = await response.json();
+        renderSoundItem(newSound);
+
+        dropZone.style.borderColor = 'var(--accent-red-light)';
+        setTimeout(() => dropZone.style.borderColor = '', 1000);
     } catch (err) {
-        console.error('Error saving sound', err);
-        alert('Could not upload to server.');
+        console.error('Error saving sound:', err);
+        alert(`Could not upload to server: ${err.message}`);
     } finally {
         showLoading(false);
         pendingUploadFile = null;
