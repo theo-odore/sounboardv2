@@ -12,3 +12,11 @@ services:
       # Mount audio files and database so they persist permanently on host disk
       - ./uploads:/app/uploads
       - ./data:/app/data
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: soundboard-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://soundboard:3000
+    depends_on:
+      - soundboard
