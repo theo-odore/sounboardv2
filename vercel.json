@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "http://YOUR_SERVER_IP:3000/api/:match*"
+      "destination": "https://illinois-darwin-oral-permanent.trycloudflare.com/api/:match*"
     },
     {
       "source": "/uploads/:match*",
-      "destination": "http://YOUR_SERVER_IP:3000/uploads/:match*"
+      "destination": "https://illinois-darwin-oral-permanent.trycloudflare.com/uploads/:match*"
     }
   ]
 }
