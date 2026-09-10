@@ -4,7 +4,7 @@ services:
     container_name: soundboard
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       - PORT=3000
       - ADMIN_KEY=${ADMIN_KEY:-admin123}
